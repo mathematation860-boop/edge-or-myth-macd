@@ -1,0 +1,20 @@
+tf,test,passed,trades,win_rate,avg_R,total_R,max_dd_R,avg_risk_usd,med_hours,IS_n,IS_avgR,OOS_n,OOS_avgR
+M15,F2_sr_strict(0.2ATR),2008.0,1422,31.7,-0.233,-330.9,333.7,7.83,1.3,885.0,-0.248,537.0,-0.208
+H1,F2_sr_strict(0.2ATR),454.0,361,37.1,-0.086,-31.1,44.4,15.63,5.8,213.0,-0.172,148.0,0.037
+H4,F2_sr_strict(0.2ATR),120.0,94,41.5,0.029,2.7,11.9,33.3,21.0,47.0,0.056,47.0,0.001
+H1,F1+F3 LONG IS,,31,32.3,-0.199,,,,,,,,
+H1,F1+F3 LONG OOS,,29,72.4,0.808,,,,,,,,
+H1,F1+F3 SHORT IS,,22,40.9,0.016,,,,,,,,
+H1,F1+F3 SHORT OOS,,17,41.2,0.026,,,,,,,,
+H1,F1_trend LONG IS,,57,33.3,-0.182,,,,,,,,
+H1,F1_trend LONG OOS,,45,62.2,0.549,,,,,,,,
+H1,F1_trend SHORT IS,,36,38.9,-0.045,,,,,,,,
+H1,F1_trend SHORT OOS,,21,33.3,-0.171,,,,,,,,
+H4,F3_minstop LONG IS,,22,45.5,0.134,,,,,,,,
+H4,F3_minstop LONG OOS,,23,52.2,0.303,,,,,,,,
+H4,F3_minstop SHORT IS,,24,41.7,0.039,,,,,,,,
+H4,F3_minstop SHORT OOS,,7,14.3,-0.644,,,,,,,,
+H1,original LONG IS,,138,39.1,-0.036,,,,,,,,
+H1,original LONG OOS,,105,45.7,0.136,,,,,,,,
+H1,original SHORT IS,,110,33.6,-0.178,,,,,,,,
+H1,original SHORT OOS,,74,41.9,0.033,,,,,,,,

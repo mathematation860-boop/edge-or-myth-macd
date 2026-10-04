@@ -1,0 +1,69 @@
+//@version=5
+// Edge or Myth - "86% Win Rate" MACD strategy (TradingLab) + 2 rules that made it work on gold
+// Original rules: MACD(12,26,9) cross BELOW zero + price above 200 EMA = long
+//                 MACD cross ABOVE zero + price below 200 EMA = short
+//                 Stop at the 200 EMA, target 1.5R
+// Fix (switch on/off in Settings):
+//   Rule 1 - Trend filter: only trade when ADX(14) >= 25
+//   Rule 2 - Minimum stop: stop (200 EMA) must be at least 1 ATR(14) away from price
+// Free script by Edge or Myth (youtube.com/@edgeormyth). Educational only - not financial advice.
+strategy("Edge or Myth - MACD 200 EMA Gold (Fixed)", overlay=true, initial_capital=10000,
+     default_qty_type=strategy.fixed, default_qty_value=1, pyramiding=0,
+     commission_type=strategy.commission.cash_per_contract, commission_value=0.0,
+     slippage=2, process_orders_on_close=false, calc_on_every_tick=false)
+
+// ---------- inputs ----------
+useTrend   = input.bool(true,  "Rule 1: Trend filter (ADX >= level)", group="The fix")
+adxLevel   = input.float(25,   "ADX level", group="The fix")
+useMinStop = input.bool(true,  "Rule 2: Minimum stop distance (x ATR)", group="The fix")
+minStopAtr = input.float(1.0,  "Min stop distance (ATR multiples)", step=0.1, group="The fix")
+rr         = input.float(1.5,  "Reward : Risk", step=0.1, group="Trade")
+riskPct    = input.float(1.0,  "Risk per trade (% of equity)", step=0.25, group="Trade")
+allowLong  = input.bool(true,  "Take longs",  group="Trade")
+allowShort = input.bool(true,  "Take shorts", group="Trade")
+startDate  = input.time(timestamp("2023-01-01T00:00:00"), "Test from", group="Test window")
+endDate    = input.time(timestamp("2026-12-31T00:00:00"), "Test until", group="Test window")
+
+// ---------- indicators ----------
+ema200 = ta.ema(close, 200)
+[macdLine, sigLine, _] = ta.macd(close, 12, 26, 9)
+[_, _, adx] = ta.dmi(14, 14)
+atr = ta.atr(14)
+
+inWindow = time >= startDate and time <= endDate
+crossUp   = ta.crossover(macdLine, sigLine)  and macdLine < 0 and sigLine < 0
+crossDown = ta.crossunder(macdLine, sigLine) and macdLine > 0 and sigLine > 0
+
+trendOk = not useTrend or adx >= adxLevel
+stopOk  = not useMinStop or math.abs(close - ema200) >= minStopAtr * atr
+
+longSig  = allowLong  and crossUp   and close > ema200 and trendOk and stopOk
+shortSig = allowShort and crossDown and close < ema200 and trendOk and stopOk
+flat = strategy.position_size == 0
+
+// stop = 200 EMA at the signal candle, target = rr x risk (entry = next bar open, approx. by close)
+var float stopPx = na
+var float tgtPx  = na
+if inWindow and flat and barstate.isconfirmed
+    if longSig
+        risk = close - ema200
+        qty = math.max(0.01, strategy.equity * riskPct / 100 / risk)
+        stopPx := ema200
+        tgtPx  := close + rr * risk
+        strategy.entry("Long", strategy.long, qty=qty)
+    else if shortSig
+        risk = ema200 - close
+        qty = math.max(0.01, strategy.equity * riskPct / 100 / risk)
+        stopPx := ema200
+        tgtPx  := close - rr * risk
+        strategy.entry("Short", strategy.short, qty=qty)
+
+strategy.exit("L-exit", "Long",  stop=stopPx, limit=tgtPx)
+strategy.exit("S-exit", "Short", stop=stopPx, limit=tgtPx)
+
+// ---------- visuals ----------
+plot(ema200, "200 EMA", color=color.new(color.orange, 0), linewidth=2)
+plotshape(longSig  and flat and inWindow, "Long signal",  shape.triangleup,   location.belowbar, color.new(color.lime, 0), size=size.small)
+plotshape(shortSig and flat and inWindow, "Short signal", shape.triangledown, location.abovebar, color.new(color.red, 0),  size=size.small)
+plot(strategy.position_size != 0 ? stopPx : na, "Stop",   color=color.new(color.red, 0),  style=plot.style_linebr)
+plot(strategy.position_size != 0 ? tgtPx  : na, "Target", color=color.new(color.lime, 0), style=plot.style_linebr)
